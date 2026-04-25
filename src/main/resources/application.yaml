@@ -1,0 +1,74 @@
+spring:
+  application:
+    name: banking-loan-rest
+
+  datasource:
+    url: jdbc:postgresql://localhost:5436/loan_db
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: 8089
+  servlet:
+    context-path: /api/v1
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+
+logging:
+  level:
+    com.protonmail.landrevillejf.bankingloan: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+loan:
+  interest:
+    personal: 12.5
+    mortgage: 5.5
+    auto: 8.0
+    business: 10.0
+  max-amount:
+    personal: 50000
+    mortgage: 1000000
+    auto: 75000
+    business: 500000
+  min-amount: 1000
+  max-tenure-months: 360
+  min-tenure-months: 6
+
+services:
+  account:
+    url: ${ACCOUNT_SERVICE_URL:http://localhost:8084}
+  profile:
+    url: ${PROFILE_SERVICE_URL:http://localhost:8085}

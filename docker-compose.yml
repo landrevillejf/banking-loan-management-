@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  postgres-loan:
+    image: postgres:15-alpine
+    container_name: loan-postgres
+    environment:
+      POSTGRES_DB: loan_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5436:5432"
+    volumes:
+      - loan_data:/var/lib/postgresql/data
+    networks:
+      - banking-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  loan-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: loan-service
+    ports:
+      - "8089:8089"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-loan:5432/loan_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SERVICES_ACCOUNT_URL: http://account-service:8084
+      SERVICES_PROFILE_URL: http://profile-service:8085
+    depends_on:
+      postgres-loan:
+        condition: service_healthy
+    networks:
+      - banking-network
+
+volumes:
+  loan_data:
+
+networks:
+  banking-network:
+    driver: bridge
